@@ -34,7 +34,7 @@ export const StickyNav = () => {
             <Button variant="ghost" className="hidden sm:inline-flex">
               About
             </Button>
-            <Button variant="cta">
+            <Button variant="cta" onClick={() => window.location.href = '/auth'}>
               Sign Up Free
             </Button>
           </div>

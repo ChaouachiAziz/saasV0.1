@@ -21,7 +21,12 @@ export const Hero = () => {
             </p>
             
             <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
-              <Button variant="hero" size="lg" className="text-lg px-8 py-6">
+              <Button 
+                variant="hero" 
+                size="lg" 
+                className="text-lg px-8 py-6"
+                onClick={() => window.location.href = '/auth'}
+              >
                 Start Free Trial
               </Button>
               <Button variant="outline" size="lg" className="text-lg px-8 py-6">

@@ -103,6 +103,7 @@ export const Pricing = () => {
                   variant={plan.popular ? "pricing" : "outline"} 
                   size="lg" 
                   className="w-full text-lg py-6"
+                  onClick={() => window.location.href = '/auth'}
                 >
                   {plan.buttonText}
                 </Button>
