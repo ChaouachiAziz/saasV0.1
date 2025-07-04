@@ -1,10 +1,9 @@
-import { useAuth } from '@/contexts/AuthContext';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { useNavigate } from 'react-router-dom';
-import { supabase } from '@/integrations/supabase/client';
-import { useToast } from '@/hooks/use-toast';
+import { useAuth } from "@/contexts/AuthContext";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { useNavigate } from "react-router-dom";
+import { useToast } from "@/hooks/use-toast";
 
 const plans = [
   {
@@ -18,11 +17,11 @@ const plans = [
       "Screenshot monitoring",
       "Email support",
       "Basic reporting",
-      "Up to 10 employees initially"
+      "Up to 10 employees initially",
     ],
     popular: false,
     stripePrice: 499,
-    tier: "Basic"
+    tier: "Basic",
   },
   {
     name: "Unlimited",
@@ -37,12 +36,12 @@ const plans = [
       "Advanced reporting & insights",
       "Unlimited employees",
       "API access",
-      "Custom integrations"
+      "Custom integrations",
     ],
     popular: true,
     stripePrice: 1999,
-    tier: "Premium"
-  }
+    tier: "Premium",
+  },
 ];
 
 const PricingPage = () => {
@@ -50,38 +49,45 @@ const PricingPage = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
 
-  const handleSubscribe = async (plan: typeof plans[0]) => {
+  const handleSubscribe = async (plan: (typeof plans)[0]) => {
     if (!user) {
-      navigate('/auth');
+      navigate("/auth");
       return;
     }
 
     try {
-      const { data, error } = await supabase.functions.invoke('create-checkout', {
-        body: { 
+      const response = await fetch("/api/subscription/create-checkout", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+        body: JSON.stringify({
           planName: plan.name,
           price: plan.stripePrice,
-          tier: plan.tier
-        }
+          tier: plan.tier,
+        }),
       });
 
-      if (error) {
+      const data = await response.json();
+
+      if (!response.ok) {
         toast({
           title: "Error",
-          description: error.message || "Failed to create checkout session",
-          variant: "destructive"
+          description: data.error || "Failed to create checkout session",
+          variant: "destructive",
         });
         return;
       }
 
       if (data?.url) {
-        window.open(data.url, '_blank');
+        window.open(data.url, "_blank");
       }
     } catch (error: any) {
       toast({
         title: "Error",
         description: error.message || "Something went wrong",
-        variant: "destructive"
+        variant: "destructive",
       });
     }
   };
@@ -90,25 +96,32 @@ const PricingPage = () => {
     if (!user) return;
 
     try {
-      const { data, error } = await supabase.functions.invoke('customer-portal');
+      const response = await fetch("/api/subscription/customer-portal", {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+      });
 
-      if (error) {
+      const data = await response.json();
+
+      if (!response.ok) {
         toast({
           title: "Error",
-          description: error.message || "Failed to open customer portal",
-          variant: "destructive"
+          description: data.error || "Failed to open customer portal",
+          variant: "destructive",
         });
         return;
       }
 
       if (data?.url) {
-        window.open(data.url, '_blank');
+        window.open(data.url, "_blank");
       }
     } catch (error: any) {
       toast({
         title: "Error",
         description: error.message || "Something went wrong",
-        variant: "destructive"
+        variant: "destructive",
       });
     }
   };
@@ -122,17 +135,23 @@ const PricingPage = () => {
             <div className="flex items-center gap-4">
               {user ? (
                 <>
-                  <Button onClick={() => navigate('/dashboard')} variant="ghost">
+                  <Button
+                    onClick={() => navigate("/dashboard")}
+                    variant="ghost"
+                  >
                     Dashboard
                   </Button>
                   {subscribed && (
-                    <Button onClick={handleManageSubscription} variant="outline">
+                    <Button
+                      onClick={handleManageSubscription}
+                      variant="outline"
+                    >
                       Manage Subscription
                     </Button>
                   )}
                 </>
               ) : (
-                <Button onClick={() => navigate('/auth')} variant="outline">
+                <Button onClick={() => navigate("/auth")} variant="outline">
                   Sign In
                 </Button>
               )}
@@ -147,7 +166,8 @@ const PricingPage = () => {
             Simple, Transparent Pricing
           </h2>
           <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-            Choose the plan that fits your team size. All plans include a 14-day free trial.
+            Choose the plan that fits your team size. All plans include a 14-day
+            free trial.
           </p>
           {subscribed && (
             <div className="mt-6">
@@ -157,17 +177,17 @@ const PricingPage = () => {
             </div>
           )}
         </div>
-        
+
         <div className="max-w-4xl mx-auto grid md:grid-cols-2 gap-8">
           {plans.map((plan, index) => {
             const isCurrentPlan = subscribed && subscriptionTier === plan.tier;
-            
+
             return (
-              <Card 
-                key={index} 
+              <Card
+                key={index}
                 className={`relative hover:shadow-elegant transition-all duration-300 hover:-translate-y-2 border-0 shadow-card ${
-                  plan.popular ? 'ring-2 ring-primary bg-gradient-subtle' : ''
-                } ${isCurrentPlan ? 'ring-2 ring-accent' : ''}`}
+                  plan.popular ? "ring-2 ring-primary bg-gradient-subtle" : ""
+                } ${isCurrentPlan ? "ring-2 ring-accent" : ""}`}
               >
                 {plan.popular && (
                   <div className="absolute -top-4 left-1/2 transform -translate-x-1/2">
@@ -176,15 +196,13 @@ const PricingPage = () => {
                     </div>
                   </div>
                 )}
-                
+
                 {isCurrentPlan && (
                   <div className="absolute -top-4 right-4">
-                    <Badge className="bg-accent text-white">
-                      Current Plan
-                    </Badge>
+                    <Badge className="bg-accent text-white">Current Plan</Badge>
                   </div>
                 )}
-                
+
                 <CardHeader className="text-center pb-8 pt-8">
                   <h3 className="text-2xl font-bold text-foreground mb-2">
                     {plan.name}
@@ -200,15 +218,16 @@ const PricingPage = () => {
                   <p className="text-primary font-medium mb-2">
                     {plan.subtitle}
                   </p>
-                  <p className="text-muted-foreground">
-                    {plan.description}
-                  </p>
+                  <p className="text-muted-foreground">{plan.description}</p>
                 </CardHeader>
-                
+
                 <CardContent className="px-8 pb-8">
                   <ul className="space-y-4 mb-8">
                     {plan.features.map((feature, featureIndex) => (
-                      <li key={featureIndex} className="flex items-center gap-3">
+                      <li
+                        key={featureIndex}
+                        className="flex items-center gap-3"
+                      >
                         <div className="w-5 h-5 bg-accent rounded-full flex items-center justify-center flex-shrink-0">
                           <div className="w-2 h-2 bg-white rounded-full" />
                         </div>
@@ -216,10 +235,16 @@ const PricingPage = () => {
                       </li>
                     ))}
                   </ul>
-                  
-                  <Button 
-                    variant={isCurrentPlan ? "secondary" : plan.popular ? "pricing" : "outline"}
-                    size="lg" 
+
+                  <Button
+                    variant={
+                      isCurrentPlan
+                        ? "secondary"
+                        : plan.popular
+                        ? "pricing"
+                        : "outline"
+                    }
+                    size="lg"
                     className="w-full text-lg py-6"
                     onClick={() => handleSubscribe(plan)}
                     disabled={isCurrentPlan}
@@ -231,7 +256,7 @@ const PricingPage = () => {
             );
           })}
         </div>
-        
+
         <div className="text-center mt-12">
           <p className="text-muted-foreground">
             All plans include 14-day free trial • No setup fees • Cancel anytime
